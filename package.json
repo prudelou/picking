@@ -4,5 +4,8 @@
   "private": true,
   "devDependencies": {
     "react-native-scripts": "1.11.1"
+  },
+  "dependencies": {
+    "materialize-css": "^0.100.2"
   }
 }
