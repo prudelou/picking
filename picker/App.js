@@ -1,8 +1,21 @@
 import React from 'react';
-import {AppRegistry, StyleSheet, Text, View, Button, Keyboard} from 'react-native';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Button,
+    Keyboard,
+    Vibration,
+    NativeModules,
+    requireNativeComponent,
+    PermissionsAndroid,
+    Platform,
+    Alert,
+    TouchableOpacity
+} from 'react-native';
 import {StackNavigator} from 'react-navigation';
-import BarcodeScanner from 'react-native-barcodescanner';
-
+import Camera from 'react-native-camera';
 import t from 'tcomb-form-native'; // 0.6.9
 
 const Form = t.form.Form;
@@ -106,21 +119,57 @@ class StartScan extends React.Component {
             headerLeft: null
         };
 
-    handleSubmit = () => {
-        this.props.navigation.navigate('Picking');
-    };
+    constructor(props) {
+        super(props);
+
+        this.camera = null;
+
+        this.state = {
+            camera: {
+                aspect: Camera.constants.Aspect.fill,
+                captureTarget: Camera.constants.CaptureTarget.cameraRoll,
+                type: Camera.constants.Type.back,
+                orientation: Camera.constants.Orientation.auto,
+                flashMode: Camera.constants.FlashMode.auto,
+                barcodeFinderVisible: Camera.constants.barcodeFinderVisible,
+            },
+            isRecording: false,
+        };
+    }
+
+    static onBarCodeRead(data) {
+        Alert.alert("Test", "Barcode: " + data);
+        console.log("Barcode: " + data);
+    }
 
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.paragraph}>A122</Text>
-                <Text style={styles.paragraph}>S4</Text>
-                <Text style={styles.paragraph}>E3</Text>
-                <Button
-                    // style={styles.bottomElement}
-                    title="Scanner"
-                    onPress={this.handleSubmit}
+                <Camera
+                    ref={cam => {
+                        this.camera = cam;
+                    }}
+                    style={styles.preview}
+                    aspect={this.state.camera.aspect}
+                    captureTarget={this.state.camera.captureTarget}
+                    type={this.state.camera.type}
+                    flashMode={this.state.camera.flashMode}
+                    onFocusChanged={() => {
+                    }}
+                    onZoomChanged={() => {
+                    }}
+                    defaultTouchToFocus
+                    mirrorImage={false}
+                    barcodeFinderVisible={this.state.camera.barcodeFinderVisible}
+                    barcodeFinderWidth={280}
+                    barcodeFinderHeight={220}
+                    barcodeFinderBorderColor="red"
+                    barcodeFinderBorderWidth={2}
+                    onBarCodeRead={StartScan.onBarCodeRead.bind(this)}
                 />
+                <View style={[styles.overlay, styles.bottomOverlay]}>
+                    <Button style={styles.enterBarcodeManualButton} title="Enter Barcode"/>
+                </View>
             </View>
         );
     }
@@ -157,6 +206,59 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center',
         textAlign: "center"
     },
+    statusBar: {
+        height: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    statusBarText: {
+        fontSize: 20,
+    },
+    buttonText: {
+        color: 'blue',
+        marginBottom: 20,
+        fontSize: 20
+    },
+    preview: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        alignItems: 'center'
+    },
+    overlay: {
+        position: 'absolute',
+        padding: 16,
+        right: 0,
+        left: 0,
+        alignItems: 'center',
+    },
+    topOverlay: {
+        top: 0,
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    bottomOverlay: {
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    captureButton: {
+        padding: 15,
+        backgroundColor: 'white',
+        borderRadius: 40,
+    },
+    typeButton: {
+        padding: 5,
+    },
+    flashButton: {
+        padding: 5,
+    },
+    buttonsSpace: {
+        width: 10,
+    }
     // bottomElement: {
     //     flexDirection: 'row',
     //     position: 'absolute',
