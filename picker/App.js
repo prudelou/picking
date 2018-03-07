@@ -12,7 +12,8 @@ import {
     PermissionsAndroid,
     Platform,
     Alert,
-    TouchableOpacity
+    TouchableOpacity,
+    Dimensions,
 } from 'react-native';
 import {StackNavigator} from 'react-navigation';
 import Camera from 'react-native-camera';
@@ -133,16 +134,34 @@ class StartScan extends React.Component {
                 flashMode: Camera.constants.FlashMode.auto,
                 barcodeFinderVisible: Camera.constants.barcodeFinderVisible,
             },
-            isRecording: false,
+            canScan: true,
+            quantity: 3
         };
+
     }
 
     static onBarCodeRead(data) {
-        Alert.alert("Test", "Barcode: " + data);
-        console.log("Barcode: " + data);
+        if (this.state.canScan) {
+            this.setState({canScan: false});
+            Alert.alert("Result", "Barcode: " + data.data, [{
+                text: 'OK',
+                onPress: () => this.setState({canScan: true})
+            },]);
+
+            if (this.state.quantity > 1) {
+                this.setState({quantity: this.state.quantity - 1})
+            }
+            else {
+                this.props.navigation.navigate('Picking');
+            }
+        }
     }
 
     render() {
+        const {height, width} = Dimensions.get('window');
+        const maskRowHeight = Math.round((height - 300) / 20);
+        const maskColWidth = (width - 300) / 2;
+
         return (
             <View style={styles.container}>
                 <Camera
@@ -152,23 +171,11 @@ class StartScan extends React.Component {
                     style={styles.preview}
                     aspect={this.state.camera.aspect}
                     captureTarget={this.state.camera.captureTarget}
-                    type={this.state.camera.type}
                     flashMode={this.state.camera.flashMode}
-                    onFocusChanged={() => {
-                    }}
-                    onZoomChanged={() => {
-                    }}
-                    defaultTouchToFocus
-                    mirrorImage={false}
-                    barcodeFinderVisible={this.state.camera.barcodeFinderVisible}
-                    barcodeFinderWidth={280}
-                    barcodeFinderHeight={220}
-                    barcodeFinderBorderColor="red"
-                    barcodeFinderBorderWidth={2}
                     onBarCodeRead={StartScan.onBarCodeRead.bind(this)}
                 />
                 <View style={[styles.overlay, styles.bottomOverlay]}>
-                    <Button style={styles.enterBarcodeManualButton} title="Enter Barcode"/>
+                    <Text style={styles.bottomText}>Quantité : {this.state.quantity}</Text>
                 </View>
             </View>
         );
@@ -206,19 +213,6 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center',
         textAlign: "center"
     },
-    statusBar: {
-        height: 100,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statusBarText: {
-        fontSize: 20,
-    },
-    buttonText: {
-        color: 'blue',
-        marginBottom: 20,
-        fontSize: 20
-    },
     preview: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -231,34 +225,18 @@ const styles = StyleSheet.create({
         left: 0,
         alignItems: 'center',
     },
-    topOverlay: {
-        top: 0,
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
     bottomOverlay: {
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    captureButton: {
-        padding: 15,
-        backgroundColor: 'white',
-        borderRadius: 40,
+    bottomText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 20,
     },
-    typeButton: {
-        padding: 5,
-    },
-    flashButton: {
-        padding: 5,
-    },
-    buttonsSpace: {
-        width: 10,
-    }
     // bottomElement: {
     //     flexDirection: 'row',
     //     position: 'absolute',
