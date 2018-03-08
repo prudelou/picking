@@ -8,7 +8,11 @@
   },
   "dependencies": {
     "react": "^16.3.0-alpha.1",
-    "react-native": "0.54.0"
+    "react-native": "^0.54.0",
+    "react-native-camera": "^1.0.1",
+    "react-navigation": "^1.5.0",
+    "react-transform-hmr": "^1.0.4",
+    "tcomb-form-native": "^0.6.11"
   },
   "devDependencies": {
     "babel-jest": "22.4.1",

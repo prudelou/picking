@@ -14,10 +14,11 @@ import {
     Alert,
     TouchableOpacity,
     Dimensions,
+    Modal,
 } from 'react-native';
 import {StackNavigator} from 'react-navigation';
 import Camera from 'react-native-camera';
-import t from 'tcomb-form-native'; // 0.6.9
+import t from 'tcomb-form-native';
 
 const Form = t.form.Form;
 
@@ -86,6 +87,7 @@ class StartPicking extends React.Component {
     }
 }
 
+//TODO: Lorsque la liste des articles est complétée, aller automatiquement sur l'écran FinishPicking
 class Picking extends React.Component {
     static navigationOptions =
         {
@@ -97,17 +99,70 @@ class Picking extends React.Component {
         this.props.navigation.navigate('StartScan');
     };
 
+    state = {
+        modalVisible: false,
+        quantity: 3
+    };
+
+    setModalVisible(visible) {
+        this.setState({modalVisible: visible});
+    }
+
     render() {
         return (
             <View style={styles.container}>
                 <Text style={styles.paragraph}>A122</Text>
                 <Text style={styles.paragraph}>S4</Text>
                 <Text style={styles.paragraph}>E3</Text>
-                <Button
-                    // style={styles.bottomElement}
-                    title="Scanner"
-                    onPress={this.handleSubmit}
-                />
+                <Text style={styles.paragraph}>Quantité : {this.state.quantity}</Text>
+                <View style={styles.bottomElement}>
+                    <Button
+                        title="Scanner"
+                        onPress={this.handleSubmit}
+                    />
+                </View>
+
+                <Modal
+                    animationType="slide"
+                    transparent={false}
+                    visible={this.state.modalVisible}
+                    onRequestClose={null}
+                >
+                    <View style={{marginTop: 22}}>
+                        <View>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+
+                            <Button
+                                title="Fermer"
+                                onPress={() => {
+                                    this.setModalVisible(!this.state.modalVisible);
+                                }}
+                            />
+                        </View>
+                    </View>
+                </Modal>
+
+                <View style={{paddingTop: 20}}>
+                    <Button
+                        title="Afficher la liste des articles"
+                        onPress={() => {
+                            this.setModalVisible(true);
+                        }}
+                    />
+                </View>
+                <View style={{paddingTop: 20}}>
+                    <Button
+                        title="Signaler une anomalie"
+                        onPress={() => {
+                            this.props.navigation.navigate('Report');
+                        }}
+                    />
+                </View>
             </View>
         );
     }
@@ -116,8 +171,7 @@ class Picking extends React.Component {
 class StartScan extends React.Component {
     static navigationOptions =
         {
-            title: 'Scanner l\'article',
-            headerLeft: null
+            title: 'Scanner l\'article'
         };
 
     constructor(props) {
@@ -142,14 +196,13 @@ class StartScan extends React.Component {
 
     static onBarCodeRead(data) {
         if (this.state.canScan) {
-            this.setState({canScan: false});
-            Alert.alert("Result", "Barcode: " + data.data, [{
-                text: 'OK',
-                onPress: () => this.setState({canScan: true})
-            },]);
-
             if (this.state.quantity > 1) {
-                this.setState({quantity: this.state.quantity - 1})
+                this.setState({canScan: false});
+                this.setState({quantity: this.state.quantity - 1});
+                Alert.alert("Result", "Barcode: " + data.data, [{
+                    text: 'OK',
+                    onPress: () => this.setState({canScan: true})
+                },]);
             }
             else {
                 this.props.navigation.navigate('Picking');
@@ -182,12 +235,80 @@ class StartScan extends React.Component {
     }
 }
 
+class Report extends React.Component {
+    static navigationOptions =
+        {
+            title: 'Signaler une anomalie'
+        };
+
+    state = {
+        quantity: 3
+    };
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.paragraph}>A122</Text>
+                <Text style={styles.paragraph}>S4</Text>
+                <Text style={styles.paragraph}>E3</Text>
+                <Text style={styles.paragraph}>Quantité : {this.state.quantity}</Text>
+
+                <View style={{paddingTop: 20}}>
+                    <Button
+                        title="Signaler un stock faible"
+                        onPress={() => {
+                            this.props.navigation.navigate('Picking');
+                            //TODO: ajouter l'envoi d'alerte
+                        }}
+                    />
+                </View>
+                <View style={{paddingTop: 20}}>
+                    <Button
+                        title="Signaler une erreur d'emplacement"
+                        onPress={() => {
+                            this.props.navigation.navigate('Picking');
+                            //TODO: ajouter l'envoi d'alerte
+                        }}
+                    />
+                </View>
+            </View>
+        );
+    }
+}
+
+class FinishPicking extends React.Component {
+    static navigationOptions =
+        {
+            title: 'Terminer',
+            headerLeft: null
+        };
+
+    handleSubmit = () => {
+        this.props.navigation.navigate('Picking');
+    };
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.paragraph}>La préparation de commande est terminée. Cliquez sur le bouton ci-dessous
+                    pour finaliser la commande</Text>
+                <Button
+                    title="Terminer"
+                    onPress={this.handleSubmit}
+                />
+            </View>
+        );
+    }
+}
+
 export default Project = StackNavigator(
     {
         Login: {screen: Login},
         StartPicking: {screen: StartPicking},
         Picking: {screen: Picking},
-        StartScan: {screen: StartScan}
+        StartScan: {screen: StartScan},
+        Report: {screen: Report},
+        FinishPicking: {screen: FinishPicking}
     });
 
 const styles = StyleSheet.create({
@@ -237,9 +358,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 20,
     },
-    // bottomElement: {
-    //     flexDirection: 'row',
-    //     position: 'absolute',
-    //     bottom: 0
-    // }
+    bottomElement: {
+        flexDirection: 'row',
+        position: 'absolute',
+        padding: 16,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
 });
