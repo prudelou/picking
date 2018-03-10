@@ -9,7 +9,6 @@ import {
     Vibration,
     NativeModules,
     requireNativeComponent,
-    PermissionsAndroid,
     Platform,
     Alert,
     TouchableOpacity,
