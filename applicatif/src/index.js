@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Materialize from 'materialize-css';
 import firebase from './firebase.js';
 import './index.css';
 
@@ -90,7 +91,7 @@ class Article {
 
 
 // ========================= JS Declaration =================================
-
+var username; // Username of current user connected
 // ==========================================================================
 
 
@@ -135,85 +136,6 @@ const login = (
     </div>
 );
 
-// UI of supervision page
-const supervision = (
-    <div>
-        <div class="row">
-            <div class="col offset-s3">
-                <h4>Alertes de stocks faibles</h4>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col s6 offset-s3 center-align">
-                <table class="highlight">
-                    <thead>
-                        <tr>
-                            <th>Article</th>
-                            <th>Stock</th>
-                            <th>Rapporteur</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                toto
-                            </td>
-                            <td>
-                                tata
-                            </td>
-                            <td>
-                                tutu
-                            </td>
-                            <td>
-                                trotro
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col offset-s3">
-                <h4>Alertes d'emplacements erronés</h4>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col s6 offset-s3 center-align">
-                <table class="highlight">
-                    <thead>
-                    <tr>
-                        <th>Article</th>
-                        <th>Stock</th>
-                        <th>Rapporteur</th>
-                        <th>Date</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            toto
-                        </td>
-                        <td>
-                            tata
-                        </td>
-                        <td>
-                            tutu
-                        </td>
-                        <td>
-                            trotro
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
-);
 // ==========================================================================
 
 
@@ -222,9 +144,93 @@ const supervision = (
 
 function connection() {
     if (utilisateurs.usernameExists(document.getElementById("identifiant").value)==0){
+        username = document.getElementById("identifiant").value;
+        Materialize.toast("Bonjour " + username, 1000)
+
+        // UI of supervision page
+        const supervision = (
+            <div>
+                <div class="row">
+                    <div class="col offset-s3">
+                        <h4>Alertes de stocks faibles</h4>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s6 offset-s3 center-align">
+                        <table class="highlight">
+                            <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Stock</th>
+                                <th>Rapporteur</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    toto
+                                </td>
+                                <td>
+                                    tata
+                                </td>
+                                <td>
+                                    tutu
+                                </td>
+                                <td>
+                                    trotro
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col offset-s3">
+                        <h4>Alertes d'emplacements erronés</h4>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col s6 offset-s3 center-align">
+                        <table class="highlight">
+                            <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Stock</th>
+                                <th>Rapporteur</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    toto
+                                </td>
+                                <td>
+                                    tata
+                                </td>
+                                <td>
+                                    tutu
+                                </td>
+                                <td>
+                                    trotro
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        );
+
         ReactDOM.render(supervision, document.getElementById('root'));
     }
     else{
+        Materialize.toast("Le nom d'utilisateur n'existe pas.", 1000)
         console.log("Le nom d'utilisatuer n'existe pas.")
     }
 }
