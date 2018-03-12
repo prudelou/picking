@@ -233,6 +233,8 @@ class Emplacements {
 
 // ========================= JS Declaration =================================
 var username; // Username of current user connected
+var createReactClass = require('create-react-class');
+var rows, stockfaible;
 // ==========================================================================
 
 
@@ -283,109 +285,158 @@ const login = (
 
 // ============================ Functions ===================================
 
+
 function connection() {
     if (utilisateurs.usernameExists(document.getElementById("identifiant").value)==0){
         username = document.getElementById("identifiant").value;
         Materialize.toast("Bonjour " + username, 1000)
 
-        var rows = [];
+        rows = [];
         for (var i in alertes.list) {
             if (alertes.list[i].type == 1) {
                 rows.push(  <tr>
+                    <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                    <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                    <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                    <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                    <td>{alertes.list[i].date}</td>
+                </tr>)
+            }
+        }
+
+        stockfaible = [];
+        for (var i in alertes.list) {
+            if (alertes.list[i].type == 0) {
+                stockfaible.push(  <tr>
+                    <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                    <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                    <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                    <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                    <td>{alertes.list[i].date}</td>
+                </tr>)
+            }
+        }
+
+        var Timer = createReactClass ({
+            tick: function() {
+                this.setState(function(){
+                    utilisateurs = new Utilisateurs();
+                    alertes = new Alertes();
+                    articles = new Articles();
+                    alerteUtilisateurs = new AlerteUtilisateurs();
+                    emplacements = new Emplacements();
+
+                    rows = [];
+                    for (var i in alertes.list) {
+                        if (alertes.list[i].type == 1) {
+                            rows.push(  <tr>
                                 <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
                                 <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
                                 <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
                                 <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
                                 <td>{alertes.list[i].date}</td>
                             </tr>)
+                        }
+                    }
+
+                    stockfaible = [];
+                    for (var i in alertes.list) {
+                        if (alertes.list[i].type == 0) {
+                            stockfaible.push(  <tr>
+                                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                                <td>{alertes.list[i].date}</td>
+                            </tr>)
+                        }
+                    }
+                    return {rows: rows, stockfaible:stockfaible}
+                });
+
+
+            },
+            componentDidMount: function() {
+                this.interval = setInterval(this.tick, 1000);
+            },
+            componentWillUnmount: function() {
+                clearInterval(this.interval);
+            },
+            render: function() {
+                return (
+                    <div>
+                        <nav>
+                            <div class="nav-wrapper">
+                                <a class="brand-logo">{username}</a>
+                                <ul id="nav-mobile" class="right hide-on-med-and-down">
+                                    <li><a href="index.html">Déconnexion</a></li>
+                                </ul>
+                            </div>
+                        </nav>
+                        <div class="row">
+                            <div class="col offset-s3">
+                                <h4>Alertes de stocks faibles</h4>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col s6 offset-s3 center-align">
+                                <table class="highlight">
+                                    <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Emplacement</th>
+                                        <th>Stock</th>
+                                        <th>Rapporteur</th>
+                                        <th>Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {stockfaible}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col offset-s3">
+                                <h4>Alertes d'emplacements erronés</h4>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col s6 offset-s3 center-align">
+                                <table class="highlight">
+                                    <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Emplacement</th>
+                                        <th>Stock</th>
+                                        <th>Rapporteur</th>
+                                        <th>Date</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {rows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                );
             }
-        }
+        });
 
-        var stockfaible = [];
-        for (var i in alertes.list) {
-            if (alertes.list[i].type == 0) {
-                stockfaible.push(  <tr>
-                                        <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                                        <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                                        <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                                        <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                                        <td>{alertes.list[i].date}</td>
-                                    </tr>)
-            }
-        }
+        ReactDOM.render(<Timer />, document.getElementById('root'));
 
-        // UI of supervision page
-        const supervision = (
-            <div>
-                <nav>
-                    <div class="nav-wrapper">
-                        <a class="brand-logo">{username}</a>
-                        <ul id="nav-mobile" class="right hide-on-med-and-down">
-                            <li><a href="index.html">Déconnexion</a></li>
-                        </ul>
-                    </div>
-                </nav>
-                <div class="row">
-                    <div class="col offset-s3">
-                        <h4>Alertes de stocks faibles</h4>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col s6 offset-s3 center-align">
-                        <table class="highlight">
-                            <thead>
-                            <tr>
-                                <th>Article</th>
-                                <th>Emplacement</th>
-                                <th>Stock</th>
-                                <th>Rapporteur</th>
-                                <th>Date</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                {stockfaible}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col offset-s3">
-                        <h4>Alertes d'emplacements erronés</h4>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col s6 offset-s3 center-align">
-                        <table class="highlight">
-                            <thead>
-                            <tr>
-                                <th>Article</th>
-                                <th>Emplacement</th>
-                                <th>Stock</th>
-                                <th>Rapporteur</th>
-                                <th>Date</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                                {rows}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-        );
-
-        ReactDOM.render(supervision, document.getElementById('root'));
     }
     else{
         Materialize.toast("Le nom d'utilisateur n'existe pas.", 1000)
         console.log("Le nom d'utilisatuer n'existe pas.")
     }
 }
-
 
 
 // Generate DataBase, launch when button "generateDb" is click.
