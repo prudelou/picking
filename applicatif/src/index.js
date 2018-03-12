@@ -36,6 +36,16 @@ class Utilisateurs {
         return "Not found";
     }
 
+    // Retourne l'id de l'utilisateur portant le nom "name". Retourne "Not found" si pas trouvé.
+    getUserNameById(id){
+        for (var i in this.list) {
+            if (this.list[i].id.localeCompare(id)==0) {
+                return this.list[i].nom;
+            }
+        }
+        return "Not found";
+    }
+
     // Return exists if username exists, -1 if not.
     usernameExists(name){
         for (var i in this.list) {
@@ -51,7 +61,6 @@ class Utilisateurs {
         var listId = [];
         for (var i in this.list) {
             if (this.list[i].poidsMax >= poids) {
-                console.log("Add " + this.list[i].nom)
                 listId.push(this.list[i].id);
             }
         }
@@ -63,7 +72,6 @@ class Utilisateurs {
         var listId = [];
         for (var i in this.list) {
             if (this.list[i].type == type) {
-                console.log("Add " + this.list[i].nom)
                 listId.push(this.list[i].id);
             }
         }
@@ -77,6 +85,24 @@ class Utilisateurs {
 // ========================= Class Alerte mng ==========================
 // Classe contenant les données de la table Alertes
 class Alertes {
+    constructor(){
+        var that = this;
+        this.list = [];
+        const itemsRef = firebase.database().ref('Alerte');
+        itemsRef.on('value', (snapshot) => {
+            let items = snapshot.val();
+            for (let item in items) {
+                that.list.push({
+                    id: item,
+                    article: items[item].article,
+                    date: items[item].date,
+                    type: items[item].type,
+                });
+            }
+            console.log("Database Alerte is ready.")
+        });
+    }
+
 }
 // ==========================================================================
 
@@ -84,10 +110,80 @@ class Alertes {
 
 // ========================= Class Article mng ==========================
 // Classe contenant les données de la table Alertes
-class Article {
+class Articles {
+    constructor(){
+        var that = this;
+        this.list = [];
+        const itemsRef = firebase.database().ref('Article');
+        itemsRef.on('value', (snapshot) => {
+            let items = snapshot.val();
+            for (let item in items) {
+                that.list.push({
+                    id: item,
+                    nom: items[item].nom,
+                    emplacement: items[item].emplacement,
+                    poids: items[item].poids,
+                    stock: items[item].stock,
+                });
+            }
+            console.log("Database Article is ready.")
+        });
+    }
+
+    // Retourne l'id de l'utilisateur portant le nom "name". Retourne "Not found" si pas trouvé.
+    getArticleNameById(id){
+        for (var i in this.list) {
+            if (this.list[i].id.localeCompare(id)==0) {
+                return this.list[i].nom;
+            }
+        }
+        return "Not found";
+    }
+
+    getArticleStockById(id){
+        for (var i in this.list) {
+            if (this.list[i].id.localeCompare(id)==0) {
+                return this.list[i].stock;
+            }
+        }
+        return "Not found";
+    }
 }
 // ==========================================================================
 
+
+
+// ====================== Class AlerteUtilisateur mng =======================
+// Classe contenant les données de la table Alertes
+class AlerteUtilisateurs {
+    constructor(){
+        var that = this;
+        this.list = [];
+        const itemsRef = firebase.database().ref('AlerteUtilisateur');
+        itemsRef.on('value', (snapshot) => {
+            let items = snapshot.val();
+            for (let item in items) {
+                that.list.push({
+                    id: item,
+                    alerte: items[item].alerte,
+                    utilisateur: items[item].utilisateur,
+                });
+            }
+            console.log("Database AlerteUtilisateur is ready.")
+        });
+    }
+
+    getUserIdByAlertId(id){
+            for (var i in this.list) {
+                if (this.list[i].alerte.localeCompare(id)==0) {
+                return this.list[i].utilisateur;
+            }
+        }
+        return "Not found";
+    }
+
+}
+// ==========================================================================
 
 
 // ========================= JS Declaration =================================
@@ -147,6 +243,30 @@ function connection() {
         username = document.getElementById("identifiant").value;
         Materialize.toast("Bonjour " + username, 1000)
 
+        var rows = [];
+        for (var i in alertes.list) {
+            if (alertes.list[i].type == 1) {
+                rows.push(  <tr>
+                                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                                <td>{alertes.list[i].date}</td>
+                            </tr>)
+            }
+        }
+
+        var stockfaible = [];
+        for (var i in alertes.list) {
+            if (alertes.list[i].type == 0) {
+                stockfaible.push(  <tr>
+                                        <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                        <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                                         <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                                        <td>{alertes.list[i].date}</td>
+                                    </tr>)
+            }
+        }
+
         // UI of supervision page
         const supervision = (
             <div>
@@ -168,20 +288,7 @@ function connection() {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>
-                                    toto
-                                </td>
-                                <td>
-                                    tata
-                                </td>
-                                <td>
-                                    tutu
-                                </td>
-                                <td>
-                                    trotro
-                                </td>
-                            </tr>
+                                {stockfaible}
                             </tbody>
                         </table>
                     </div>
@@ -205,20 +312,7 @@ function connection() {
                             </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>
-                                    toto
-                                </td>
-                                <td>
-                                    tata
-                                </td>
-                                <td>
-                                    tutu
-                                </td>
-                                <td>
-                                    trotro
-                                </td>
-                            </tr>
+                                {rows}
                             </tbody>
                         </table>
                     </div>
@@ -366,5 +460,9 @@ function generateDB(){
 // =========================== Run at start =================================
 // Generate login page
 var utilisateurs = new Utilisateurs();
+var alertes = new Alertes();
+var articles = new Articles();
+var alerteUtilisateurs = new AlerteUtilisateurs();
+
 ReactDOM.render(login, document.getElementById('root'));
 // ==========================================================================
