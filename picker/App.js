@@ -18,6 +18,7 @@ import {
 import {StackNavigator} from 'react-navigation';
 import Camera from 'react-native-camera';
 import t from 'tcomb-form-native';
+import {Utilisateurs, Article, Alertes} from './database';
 
 const Form = t.form.Form;
 
@@ -35,6 +36,8 @@ class Login extends React.Component {
     handleSubmit = () => {
         const value = this._form.getValue(); // use that ref to get the form value
         console.log('value: ', value);
+        const utilisateurs = new Utilisateurs();
+        Alert.alert(utilisateurs.usernameExists() + " " + value);
         if (value !== null) {
             this.props.navigation.navigate('StartPicking');
             Keyboard.dismiss();
