@@ -77,6 +77,7 @@ class Utilisateurs {
         }
         return listId;
     }
+
 }
 // ==========================================================================
 
@@ -148,6 +149,15 @@ class Articles {
         }
         return "Not found";
     }
+
+    getEmplcamentIdByArticleId(id){
+        for (var i in this.list) {
+            if (this.list[i].id.localeCompare(id)==0) {
+                return this.list[i].emplacement;
+            }
+        }
+        return "Not found";
+    }
 }
 // ==========================================================================
 
@@ -185,6 +195,41 @@ class AlerteUtilisateurs {
 }
 // ==========================================================================
 
+
+
+// ========================= Class Emplacement mng ==========================
+// Classe contenant les données de la table Emplacement
+class Emplacements {
+    constructor(){
+        var that = this;
+        this.list = [];
+        const itemsRef = firebase.database().ref('Emplacement');
+        itemsRef.on('value', (snapshot) => {
+            let items = snapshot.val();
+            for (let item in items) {
+                that.list.push({
+                    id: item,
+                    colonne: items[item].colonne,
+                    emplacement: items[item].emplacement,
+                    etagere: items[item].etagere,
+                    section: items[item].section,
+                });
+            }
+            console.log("Database Emplacement is ready.")
+        });
+    }
+
+    getEmplacementById(id){
+        for (var i in this.list) {
+            if (this.list[i].id.localeCompare(id)==0) {
+                return this.list[i].colonne+this.list[i].emplacement+" E"+this.list[i].etagere+" S"+this.list[i].section;
+            }
+        }
+        return "Not found";
+    }
+
+}
+// ==========================================================================
 
 // ========================= JS Declaration =================================
 var username; // Username of current user connected
@@ -248,6 +293,7 @@ function connection() {
             if (alertes.list[i].type == 1) {
                 rows.push(  <tr>
                                 <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
                                 <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
                                 <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
                                 <td>{alertes.list[i].date}</td>
@@ -260,8 +306,9 @@ function connection() {
             if (alertes.list[i].type == 0) {
                 stockfaible.push(  <tr>
                                         <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                        <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
                                         <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                                         <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                                        <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
                                         <td>{alertes.list[i].date}</td>
                                     </tr>)
             }
@@ -282,6 +329,7 @@ function connection() {
                             <thead>
                             <tr>
                                 <th>Article</th>
+                                <th>Emplacement</th>
                                 <th>Stock</th>
                                 <th>Rapporteur</th>
                                 <th>Date</th>
@@ -306,6 +354,7 @@ function connection() {
                             <thead>
                             <tr>
                                 <th>Article</th>
+                                <th>Emplacement</th>
                                 <th>Stock</th>
                                 <th>Rapporteur</th>
                                 <th>Date</th>
@@ -463,6 +512,7 @@ var utilisateurs = new Utilisateurs();
 var alertes = new Alertes();
 var articles = new Articles();
 var alerteUtilisateurs = new AlerteUtilisateurs();
+var emplacements = new Emplacements();
 
 ReactDOM.render(login, document.getElementById('root'));
 // ==========================================================================
