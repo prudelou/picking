@@ -317,6 +317,14 @@ function connection() {
         // UI of supervision page
         const supervision = (
             <div>
+                <nav>
+                    <div class="nav-wrapper">
+                        <a href="#" class="brand-logo">{username}</a>
+                        <ul id="nav-mobile" class="right hide-on-med-and-down">
+                            <li><a href="collapsible.html">Déconnexion</a></li>
+                        </ul>
+                    </div>
+                </nav>
                 <div class="row">
                     <div class="col offset-s3">
                         <h4>Alertes de stocks faibles</h4>
