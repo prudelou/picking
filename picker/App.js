@@ -14,6 +14,8 @@ import {
     TouchableOpacity,
     Dimensions,
     Modal,
+    AsyncStorage,
+    ActivityIndicator
 } from 'react-native';
 import {StackNavigator} from 'react-navigation';
 import Camera from 'react-native-camera';
@@ -22,9 +24,30 @@ import {Utilisateurs, Article, Alertes} from './database';
 
 const Form = t.form.Form;
 
+let ID = -1;
+
 const LoginStruct = t.struct({
     Identifiant: t.String,
 });
+
+async function saveItem(key, value) {
+    try {
+        console.log("Saving " + key + " : " + value);
+        await AsyncStorage.setItem(key, value);
+    } catch (error) {
+        console.log('Error while saving data for key : ' + key);
+    }
+}
+
+async function getItem(key) {
+    try {
+        console.log("Retreiving " + key);
+        return await AsyncStorage.getItem(key);
+    } catch (error) {
+        console.log('Error while saving data for key : ' + key);
+    }
+    return null;
+}
 
 class Login extends React.Component {
     static navigationOptions =
@@ -35,14 +58,25 @@ class Login extends React.Component {
 
     handleSubmit = () => {
         const value = this._form.getValue(); // use that ref to get the form value
-        console.log('value: ', value);
-        const utilisateurs = new Utilisateurs();
-        Alert.alert(utilisateurs.usernameExists() + " " + value);
+        this.state.id = this.state.utilisateurs.getUserIdByName(value.Identifiant);
         if (value !== null) {
-            this.props.navigation.navigate('StartPicking');
-            Keyboard.dismiss();
+            if (this.state.id !== -1) {
+                saveItem('id', this.state.id);
+                ID = this.state.id;
+                this.props.navigation.navigate('StartPicking');
+                Keyboard.dismiss();
+            }
         }
     };
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            utilisateurs: new Utilisateurs(),
+            id: -1,
+        };
+    }
 
     render() {
         return (
@@ -52,7 +86,7 @@ class Login extends React.Component {
                     <Form
                         ref={c => this._form = c} // assign a ref
                         type={LoginStruct}
-                        value={{Identifiant: 'WESH'}}
+                        value={{Identifiant: 'Wesh'}}
                     />
                     <Button
                         title="Se connecter"
@@ -72,8 +106,27 @@ class StartPicking extends React.Component {
         };
 
     handleSubmit = () => {
+        this.setState({isLoaderVisible: true});
+        console.log(this.state.id);
+        //TODO: Ajouter la génération de parcours
+        this.setState({isLoaderVisible: false});
         this.props.navigation.navigate('Picking');
     };
+
+    //TODO: ajouter AsyncStorage plus tard
+    // Attention, componentWillMount est déprécié mais c'est le seul qui marche. Niksamère react native
+    // async componentWillMount() {
+    //     AsyncStorage.getItem('id').then((value) => this.setState({ id: value }), Alert.alert('c bon mdr'));
+    // }
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            id: ID,
+            isLoaderVisible: true,
+        };
+    }
 
     render() {
         return (
@@ -84,6 +137,9 @@ class StartPicking extends React.Component {
                     title="Démarrer"
                     onPress={this.handleSubmit}
                 />
+                <View style={[styles.container, styles.horizontal]}>
+                    <ActivityIndicator animating={this.state.isLoaderVisible} size="large" color="#0000ff"/>
+                </View>
             </View>
         );
     }
@@ -128,7 +184,7 @@ class Picking extends React.Component {
                     animationType="slide"
                     transparent={false}
                     visible={this.state.modalVisible}
-                    onRequestClose={null}
+                    onRequestClose={() => null}
                 >
                     <View style={{marginTop: 22}}>
                         <View>
@@ -369,5 +425,10 @@ const styles = StyleSheet.create({
         right: 0,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    horizontal: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 10
     }
 });
