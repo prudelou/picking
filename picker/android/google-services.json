@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "203230874084",
+    "firebase_url": "https://picking-1c5fa.firebaseio.com",
+    "project_id": "picking-1c5fa",
+    "storage_bucket": "picking-1c5fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203230874084:android:51907c0a7bf838ab",
+        "android_client_info": {
+          "package_name": "com.picker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "203230874084-o50sfm4qs6kqsj2alcmrakupibpk0e8q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAEyWFBtDroWgrzKzs_epHVH88PqZCr1g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
