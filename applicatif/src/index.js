@@ -291,66 +291,12 @@ function connection() {
         username = document.getElementById("identifiant").value;
         Materialize.toast("Bonjour " + username, 1000)
 
-        rows = [];
-        for (var i in alertes.list) {
-            if (alertes.list[i].type == 1) {
-                rows.push(  <tr>
-                    <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                    <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                    <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                    <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                    <td>{alertes.list[i].date}</td>
-                </tr>)
-            }
-        }
-
-        stockfaible = [];
-        for (var i in alertes.list) {
-            if (alertes.list[i].type == 0) {
-                stockfaible.push(  <tr>
-                    <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                    <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                    <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                    <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                    <td>{alertes.list[i].date}</td>
-                </tr>)
-            }
-        }
+        initializeData();
 
         var Timer = createReactClass ({
             tick: function() {
                 this.setState(function(){
-                    utilisateurs = new Utilisateurs();
-                    alertes = new Alertes();
-                    articles = new Articles();
-                    alerteUtilisateurs = new AlerteUtilisateurs();
-                    emplacements = new Emplacements();
-
-                    rows = [];
-                    for (var i in alertes.list) {
-                        if (alertes.list[i].type == 1) {
-                            rows.push(  <tr>
-                                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                                <td>{alertes.list[i].date}</td>
-                            </tr>)
-                        }
-                    }
-
-                    stockfaible = [];
-                    for (var i in alertes.list) {
-                        if (alertes.list[i].type == 0) {
-                            stockfaible.push(  <tr>
-                                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                                <td>{alertes.list[i].date}</td>
-                            </tr>)
-                        }
-                    }
+                    initializeData();
                     return {rows: rows, stockfaible:stockfaible}
                 });
 
@@ -389,6 +335,7 @@ function connection() {
                                         <th>Stock</th>
                                         <th>Rapporteur</th>
                                         <th>Date</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -414,6 +361,7 @@ function connection() {
                                         <th>Stock</th>
                                         <th>Rapporteur</th>
                                         <th>Date</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -563,15 +511,53 @@ function generateDB(){
 }
 // ==========================================================================
 
+function initializeData(){
+    // Generate login page
+    utilisateurs = new Utilisateurs();
+    alertes = new Alertes();
+    articles = new Articles();
+    alerteUtilisateurs = new AlerteUtilisateurs();
+    emplacements = new Emplacements();
 
+    rows = [];
+    for (var i in alertes.list) {
+        if (alertes.list[i].type == 1) {
+            rows.push(  <tr>
+                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                <td>{alertes.list[i].date}</td>
+                <td><a class="btn-floating green"><i class="material-icons">clear</i></a></td>
+            </tr>)
+        }
+    }
 
+    stockfaible = [];
+    for (var i in alertes.list) {
+        if (alertes.list[i].type == 0) {
+            stockfaible.push(  <tr>
+                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                <td>{alertes.list[i].date}</td>
+                <td><a class="btn-floating green"><i class="material-icons">clear</i></a></td>
+            </tr>)
+        }
+    }
+}
+
+function resolveRow(id){
+
+}
 // =========================== Run at start =================================
+
 // Generate login page
 var utilisateurs = new Utilisateurs();
 var alertes = new Alertes();
 var articles = new Articles();
 var alerteUtilisateurs = new AlerteUtilisateurs();
 var emplacements = new Emplacements();
-
 ReactDOM.render(login, document.getElementById('root'));
 // ==========================================================================
