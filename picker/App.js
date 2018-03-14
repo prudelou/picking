@@ -272,22 +272,24 @@ class StartScan extends React.Component {
                 flashMode: Camera.constants.FlashMode.auto,
             },
             canScan: true,
+            pickingEnded: false
         };
 
     }
 
     static onBarCodeRead(data) {
         console.log("Code scanné");
-        if (this.state.canScan) {
-            if (this.state.quantity > 1) {
+        if (this.state.canScan && !this.state.pickingEnded) {
+            if (PICKING_LIST[0]['quantité'] > 1) {
                 this.setState({canScan: false});
-                this.setState({quantity: this.state.quantity - 1});
+                PICKING_LIST[0]['quantité'] = PICKING_LIST[0]['quantité'] - 1;
                 Alert.alert("Produit scanné", "Code barres : " + data.data, [{
                     text: 'OK',
                     onPress: () => this.setState({canScan: true})
                 },]);
             }
             else {
+                this.setState({pickingEnded: true});
                 // TODO:  Mettre l'article comme pris en base
 
                 // Suppression de l'article en cours
@@ -318,6 +320,8 @@ class StartScan extends React.Component {
                 />
                 <View style={[styles.overlay, styles.bottomOverlay]}>
                     <Text style={styles.bottomText}>Quantité : {PICKING_LIST[0]['quantité']}</Text>
+                </View>
+                <View style={[styles.overlay, styles.bottomOverlay2]}>
                     <Button
                         title="Validation manuelle"
                         onPress={() => {
@@ -469,6 +473,13 @@ const styles = StyleSheet.create({
     },
     bottomOverlay: {
         bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bottomOverlay2: {
+        bottom: 57,
         backgroundColor: 'rgba(0,0,0,0.6)',
         flexDirection: 'row',
         justifyContent: 'center',

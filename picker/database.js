@@ -339,9 +339,9 @@ export class Parcours extends React.Component {
         console.log(commandList);
         for (let i = 0; i < commandList.length; i++) {
             console.log(commandList[i]);
-            if (poidsCommande + commandList[i]['poids'] <= poidsMax && commandList[i]['isintoparcours'] !== 1) {
+            if (poidsCommande + (commandList[i]['poids'] * commandList[i]['quantité']) <= poidsMax && commandList[i]['isintoparcours'] !== 1) {
                 parcours.push(commandList[i]);
-                poidsCommande += commandList[i]['poids'];
+                poidsCommande += (commandList[i]['poids'] * commandList[i]['quantité']);
 
                 // Set is into parcours in base
                 const itemsRef = firebase.database().ref('ArticleCommande');
@@ -349,6 +349,11 @@ export class Parcours extends React.Component {
                 itemsRef.child(commandList[i]['id']).update(data);
             }
         }
+
+        // Suppression des doublons
+        // for(let i = 0; i < parcours.length; i++) {
+        //
+        // }
 
         // Order by Emplacements
         parcours.sort((val1, val2) => {
