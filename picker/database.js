@@ -54,14 +54,13 @@ export class Utilisateurs extends React.Component {
     }
 
     // Retourne une liste d'id d'utilisateurs pouvant porter le poids "poids".
-    getUserIdsByPoidsMax(poids) {
-        var listId = [];
-        for (var i in this.list) {
-            if (this.list[i].poidsMax >= poids) {
-                listId.push(this.list[i].id);
+    getPoidsMaxById(id) {
+        for (let i in this.list) {
+            if (this.list[i].id.localeCompare(id) === 0) {
+                return this.list[i].poidsMax;
             }
         }
-        return listId;
+        return 120;
     }
 
     // Retourne une liste d'id d'utilisateurs du type passé en paramètre
@@ -150,7 +149,7 @@ export class Article extends React.Component {
 }
 
 // Classe contenant les données de la table Alertes
-class AlerteUtilisateurs extends React.Component {
+export class AlerteUtilisateurs extends React.Component {
     constructor() {
         super();
         var that = this;
@@ -180,7 +179,7 @@ class AlerteUtilisateurs extends React.Component {
 
 }
 
-class Emplacements extends React.Component {
+export class Emplacements extends React.Component {
     constructor() {
         super();
         var that = this;
@@ -212,7 +211,7 @@ class Emplacements extends React.Component {
 
 }
 
-class ArticleParcours extends React.Component {
+export class ArticleParcours extends React.Component {
     constructor() {
         super();
         var that = this;
@@ -242,36 +241,56 @@ class ArticleParcours extends React.Component {
 
 }
 
-class Commande extends React.Component {
+export class Commande extends React.Component {
     constructor() {
         super();
-        var that = this;
+        let that = this;
         this.list = [];
-        const itemsRef = firebase.database().ref('Commande');
-        itemsRef.on('value', (snapshot) => {
+        const itemsRef = firebase.database().ref().child('ArticleCommande/').orderByChild('date_updated').once('value').then(function (snapshot) {
             let items = snapshot.val();
+            console.log(snapshot);
+            console.log(items);
             for (let item in items) {
-                that.list.push({
-                    id: item,
-                    date: items[item].date,
+                // Let's go for second table
+                let refArticle = firebase.database().ref().child('Article/' + items[item].article).once('value').then(function (snapshotArticle) {
+                    let itemsArticle = snapshotArticle.val();
+                    // Let's go for third table
+                    let refEmplacement = firebase.database().ref().child('Emplacement/' + itemsArticle['emplacement']).once('value').then(function (snapshotEmplacement) {
+                        let emplacement = snapshotEmplacement.val();
+                        that.list.push({
+                            //Table Article
+                            id: itemsArticle, // ID of ArticleCommande
+                            stock: itemsArticle['stock'],
+                            poids: itemsArticle['poids'],
+                            nom: itemsArticle['nom'],
+                            emplacement: itemsArticle['emplacement'], // ID of Emplacement
+
+                            // Table Emplacement
+                            colonne: emplacement['colonne'],
+                            emplacement: emplacement['emplacement'],
+                            etagere: emplacement['etagere'],
+                            section: emplacement['section'],
+
+                            // Table ArticleCommande
+                            article: items[item].article, // ID of Article
+                            commande: items[item].commande, // ID of Commande
+                            isintoparcours: items[item].isintoparcours,
+                            quantité: items[item].quantité,
+                        });
+                    });
                 });
             }
-            console.log("Database Commande is ready.")
+            console.log("Database Commande is ready.");
         });
     }
 
-    // getEmplacementById(id){
-    //     for (var i in this.list) {
-    //         if (this.list[i].id.localeCompare(id)==0) {
-    //             return this.list[i].colonne+this.list[i].emplacement+" E"+this.list[i].etagere+" S"+this.list[i].section;
-    //         }
-    //     }
-    //     return "Not found";
-    // }
+    getCommandes() {
+        return this.list;
+    }
 
 }
 
-class Parcours extends React.Component {
+export class Parcours extends React.Component {
     constructor() {
         super();
         var that = this;
@@ -291,18 +310,33 @@ class Parcours extends React.Component {
         });
     }
 
-    // getEmplacementById(id){
-    //     for (var i in this.list) {
-    //         if (this.list[i].id.localeCompare(id)==0) {
-    //             return this.list[i].colonne+this.list[i].emplacement+" E"+this.list[i].etagere+" S"+this.list[i].section;
-    //         }
-    //     }
-    //     return "Not found";
-    // }
+    getParcoursFor(utilisateurs, commandes, id) {
+        console.log('Début de la génération du parcours');
+        // On récupère le poids max de l'utilisateur
+        let poidsCommande = 0;
+        let poidsMax = utilisateurs.getPoidsMaxById(id);
+
+        // On récupère toutes les commandes
+        let commandList = commandes.getCommandes();
+
+        // Calcul du parcours
+        let parcours = [];
+        console.log(commandList);
+        for (let i = 0; i < commandList.length; i++) { // TODO: l'optimisation est seulement faite en fonction du poids, la faire en emplacement
+            console.log(commandList[i]);
+            if (poidsCommande + commandList[i]['poids'] <= poidsMax) {
+                parcours.push(commandList[i]);
+                poidsCommande += commandList[i]['poids'];
+            }
+        }
+
+        console.log('Fin de la génération du parcours. Poids du parcours : ' + poidsCommande);
+        return parcours;
+    }
 
 }
 
-class ArticleCommande extends React.Component {
+export class ArticleCommande extends React.Component {
     constructor() {
         super();
         var that = this;
@@ -334,4 +368,4 @@ class ArticleCommande extends React.Component {
 
 }
 
-export default (Utilisateurs, Article, Alertes, AlerteUtilisateurs, Emplacements, ArticleParcours, ArticleCommande, Commande, Parcours);
+export default (Utilisateurs, Parcours, Article, Alertes, AlerteUtilisateurs, Emplacements, ArticleParcours, Commande, ArticleCommande);

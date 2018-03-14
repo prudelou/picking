@@ -20,11 +20,16 @@ import {
 import {StackNavigator} from 'react-navigation';
 import Camera from 'react-native-camera';
 import t from 'tcomb-form-native';
-import {Utilisateurs, Article, Alertes} from './database';
+import {
+    Utilisateurs,
+    Parcours, Commande,
+} from './database';
 
 const Form = t.form.Form;
 
+// Constant fields used instead of AsyncStorage
 let ID = -1;
+let PICKING_LIST = [];
 
 const LoginStruct = t.struct({
     Identifiant: t.String,
@@ -106,27 +111,41 @@ class StartPicking extends React.Component {
         };
 
     handleSubmit = () => {
-        this.setState({isLoaderVisible: true});
+        this.setState({isLoaderVisible: true}); // set loader visible
         console.log(this.state.id);
-        //TODO: Ajouter la génération de parcours
-        this.setState({isLoaderVisible: false});
-        this.props.navigation.navigate('Picking');
-    };
 
-    //TODO: ajouter AsyncStorage plus tard
-    // Attention, componentWillMount est déprécié mais c'est le seul qui marche. Niksamère react native
-    // async componentWillMount() {
-    //     AsyncStorage.getItem('id').then((value) => this.setState({ id: value }), Alert.alert('c bon mdr'));
-    // }
+        PICKING_LIST = this.state.parcours.getParcoursFor(this.state.utilisateurs, this.state.commande, this.state.id);
+        console.log(PICKING_LIST);
+
+        this.setState({isLoaderVisible: false}); // set loader invisible
+
+        if (PICKING_LIST.length === 0) {
+            // If Tables are not loaded or nothing to be picked
+            Alert.alert("Aucune commande disponible");
+        }
+        else {
+            this.props.navigation.navigate('Picking');
+        }
+
+    };
 
     constructor(props) {
         super(props);
 
         this.state = {
             id: ID,
-            isLoaderVisible: true,
+            isLoaderVisible: false,
+            parcours: new Parcours(),
+            commande: new Commande(),
+            utilisateurs: new Utilisateurs()
         };
     }
+
+    //TODO: ajouter AsyncStorage (ou react native storage) plus tard
+    // Attention, componentWillMount est déprécié mais c'est le seul qui marche. Niksamère react native
+    // async componentWillMount() {
+    //     AsyncStorage.getItem('id').then((value) => this.setState({ id: value }), Alert.alert('c bon mdr'));
+    // }
 
     render() {
         return (
@@ -136,6 +155,7 @@ class StartPicking extends React.Component {
                 <Button
                     title="Démarrer"
                     onPress={this.handleSubmit}
+                    color="#56ee01"
                 />
                 <View style={[styles.container, styles.horizontal]}>
                     <ActivityIndicator animating={this.state.isLoaderVisible} size="large" color="#0000ff"/>
@@ -159,7 +179,6 @@ class Picking extends React.Component {
 
     state = {
         modalVisible: false,
-        quantity: 3
     };
 
     setModalVisible(visible) {
@@ -169,14 +188,16 @@ class Picking extends React.Component {
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.paragraph}>A122</Text>
-                <Text style={styles.paragraph}>S4</Text>
-                <Text style={styles.paragraph}>E3</Text>
-                <Text style={styles.paragraph}>Quantité : {this.state.quantity}</Text>
+                <Text style={styles.paragraph}>{PICKING_LIST[0]['nom']}</Text>
+                <Text style={styles.paragraph}>{PICKING_LIST[0]['colonne']}{PICKING_LIST[0]['emplacement']}</Text>
+                <Text style={styles.paragraph}>Section {PICKING_LIST[0]['section']}</Text>
+                <Text style={styles.paragraph}>Etagère {PICKING_LIST[0]['etagere']}</Text>
+                <Text style={styles.paragraph}>Quantité : {PICKING_LIST[0]['quantité']}</Text>
                 <View style={styles.bottomElement}>
                     <Button
                         title="Scanner"
                         onPress={this.handleSubmit}
+                        color="#eee252"
                     />
                 </View>
 
@@ -219,6 +240,7 @@ class Picking extends React.Component {
                         onPress={() => {
                             this.props.navigation.navigate('Report');
                         }}
+                        color="#ee130e"
                     />
                 </View>
             </View>
@@ -244,26 +266,31 @@ class StartScan extends React.Component {
                 type: Camera.constants.Type.back,
                 orientation: Camera.constants.Orientation.auto,
                 flashMode: Camera.constants.FlashMode.auto,
-                barcodeFinderVisible: Camera.constants.barcodeFinderVisible,
             },
             canScan: true,
-            quantity: 3
         };
 
     }
 
     static onBarCodeRead(data) {
+        console.log("Code scanné");
         if (this.state.canScan) {
             if (this.state.quantity > 1) {
                 this.setState({canScan: false});
                 this.setState({quantity: this.state.quantity - 1});
-                Alert.alert("Result", "Barcode: " + data.data, [{
+                Alert.alert("Produit scanné", "Code barres : " + data.data, [{
                     text: 'OK',
                     onPress: () => this.setState({canScan: true})
                 },]);
             }
             else {
-                this.props.navigation.navigate('Picking');
+                PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
+                if (PICKING_LIST.length === 0) {
+                    this.props.navigation.navigate('FinishPicking');
+                }
+                else {
+                    this.props.navigation.navigate('Picking');
+                }
             }
         }
     }
@@ -276,9 +303,6 @@ class StartScan extends React.Component {
         return (
             <View style={styles.container}>
                 <Camera
-                    ref={cam => {
-                        this.camera = cam;
-                    }}
                     style={styles.preview}
                     aspect={this.state.camera.aspect}
                     captureTarget={this.state.camera.captureTarget}
@@ -286,7 +310,20 @@ class StartScan extends React.Component {
                     onBarCodeRead={StartScan.onBarCodeRead.bind(this)}
                 />
                 <View style={[styles.overlay, styles.bottomOverlay]}>
-                    <Text style={styles.bottomText}>Quantité : {this.state.quantity}</Text>
+                    <Text style={styles.bottomText}>Quantité : {PICKING_LIST[0]['quantité']}</Text>
+                    <Button
+                        title="Validation manuelle"
+                        onPress={() => {
+                            PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
+                            if (PICKING_LIST.length === 0) {
+                                this.props.navigation.navigate('FinishPicking');
+                            }
+                            else {
+                                this.props.navigation.navigate('Picking');
+                            }
+                        }}
+                        styles.bottomText
+                    />
                 </View>
             </View>
         );
@@ -299,34 +336,46 @@ class Report extends React.Component {
             title: 'Signaler une anomalie'
         };
 
-    state = {
-        quantity: 3
-    };
-
     render() {
         return (
             <View style={styles.container}>
-                <Text style={styles.paragraph}>A122</Text>
-                <Text style={styles.paragraph}>S4</Text>
-                <Text style={styles.paragraph}>E3</Text>
-                <Text style={styles.paragraph}>Quantité : {this.state.quantity}</Text>
+                <Text style={styles.paragraph}>{PICKING_LIST[0]['colonne']}{PICKING_LIST[0]['emplacement']}</Text>
+                <Text style={styles.paragraph}>S{PICKING_LIST[0]['section']}</Text>
+                <Text style={styles.paragraph}>E{PICKING_LIST[0]['etagere']}</Text>
+                <Text style={styles.paragraph}>Quantité : {PICKING_LIST[0]['quantité']}</Text>
 
                 <View style={{paddingTop: 20}}>
                     <Button
-                        title="Signaler un stock faible"
+                        title="Signaler un stock insuffisant"
                         onPress={() => {
-                            this.props.navigation.navigate('Picking');
                             //TODO: ajouter l'envoi d'alerte
+
+                            PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
+                            if (PICKING_LIST.length === 0) {
+                                this.props.navigation.navigate('FinishPicking');
+                            }
+                            else {
+                                this.props.navigation.navigate('Picking');
+                            }
                         }}
+                        color="#ee130e"
                     />
                 </View>
                 <View style={{paddingTop: 20}}>
                     <Button
                         title="Signaler une erreur d'emplacement"
                         onPress={() => {
-                            this.props.navigation.navigate('Picking');
                             //TODO: ajouter l'envoi d'alerte
+
+                            PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
+                            if (PICKING_LIST.length === 0) {
+                                this.props.navigation.navigate('FinishPicking');
+                            }
+                            else {
+                                this.props.navigation.navigate('Picking');
+                            }
                         }}
+                        color="#ee130e"
                     />
                 </View>
             </View>
@@ -342,7 +391,7 @@ class FinishPicking extends React.Component {
         };
 
     handleSubmit = () => {
-        this.props.navigation.navigate('Picking');
+        this.props.navigation.navigate('StartPicking');
     };
 
     render() {
@@ -353,6 +402,7 @@ class FinishPicking extends React.Component {
                 <Button
                     title="Terminer"
                     onPress={this.handleSubmit}
+                    color="#eee252"
                 />
             </View>
         );
@@ -388,7 +438,7 @@ const styles = StyleSheet.create({
     },
     paragraph: {
         paddingBottom: 30,
-        fontSize: 30,
+        fontSize: 20,
         textAlignVertical: 'center',
         textAlign: "center"
     },
