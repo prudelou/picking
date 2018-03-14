@@ -109,40 +109,7 @@ export class Alertes extends React.Component {
                 itemsRef.push(itemsTwo[itemTwo]);
             }
         }
-
-        // itemsRef = firebase.database().ref('Alerte');
-        // let that = this;
-        // itemsRef.on('value', (snapshot) => {
-        //     let items = snapshot.val();
-        //     for (let item in items) {
-        //         that.list.push({
-        //             id: item,
-        //             article: items[item].article,
-        //             date: items[item].date,
-        //             type: items[item].type,
-        //         });
-        //     }
-        // });
-        //
-        // // let alertId = this.getAlertId(idArticle, currentDate, type);
-        //
-        // itemsRef = firebase.database().ref('AlerteUtilisateur');
-        // let itemsTwo = [{alerte: alertId, utilisateur:id}];
-        // for (let itemTwo in itemsTwo){
-        //     itemsRef.push(itemsTwo[itemTwo]);
-        // }
     }
-
-    // getAlertId(idArticle, currentDate, type) {
-    //     console.log(idArticle + " " + currentDate + " " + type + " ");
-    //     for (let i in this.list) {
-    //         console.log(this.list[i].article + " " + this.list[i].date + " " + this.list[i].type + " ");
-    //         if (this.list[i].article.localeCompare(idArticle) == 0 && this.list[i].date.localeCompare(currentDate) == 0 && this.list[i].type.localeCompare(type) == 0) {
-    //             return this.list[i].id;
-    //         }
-    //     }
-    //     return "Not found";
-    // }
 }
 
 // Classe contenant les données de la table Alertes
@@ -307,7 +274,7 @@ export class Commande extends React.Component {
                         let emplacement = snapshotEmplacement.val();
                         that.list.push({
                             //Table Article
-                            id: itemsArticle, // ID of ArticleCommande
+                            id: item, // ID of ArticleCommande
                             stock: itemsArticle['stock'],
                             poids: itemsArticle['poids'],
                             nom: itemsArticle['nom'],
@@ -370,13 +337,36 @@ export class Parcours extends React.Component {
         // Calcul du parcours
         let parcours = [];
         console.log(commandList);
-        for (let i = 0; i < commandList.length; i++) { // TODO: l'optimisation est seulement faite en fonction du poids, la faire en emplacement
+        for (let i = 0; i < commandList.length; i++) {
             console.log(commandList[i]);
-            if (poidsCommande + commandList[i]['poids'] <= poidsMax) {
+            if (poidsCommande + commandList[i]['poids'] <= poidsMax && commandList[i]['isintoparcours'] !== 1) {
                 parcours.push(commandList[i]);
                 poidsCommande += commandList[i]['poids'];
+
+                // Set is into parcours in base
+                const itemsRef = firebase.database().ref('ArticleCommande');
+                let data = {isintoparcours: 1};
+                itemsRef.child(commandList[i]['id']).update(data);
             }
         }
+
+        // Order by Emplacements
+        parcours.sort((val1, val2) => {
+            return val1.colonne.localeCompare(val2.colonne);
+        });
+
+        // TODO: Insert into parcours and ArticleParcours
+        // let itemsRef = firebase.database().ref('Parcours');
+        // for (let parcoursItem in parcours) {
+        //     let newKey = itemsRef.push(parcours[parcoursItem]).key;
+        //     let ref = firebase.database().ref('ArticleParcours');
+        //
+        //     // Insert in second base
+        //     let itemsTwo = [{article: parcoursItem['article'], parcours: newKey}];
+        //     for (let itemTwo in itemsTwo) {
+        //         itemsRef.push(itemsTwo[itemTwo]);
+        //     }
+        // }
 
         console.log('Fin de la génération du parcours. Poids du parcours : ' + poidsCommande);
         return parcours;
@@ -404,16 +394,6 @@ export class ArticleCommande extends React.Component {
             console.log("Database ArticleCommande is ready.")
         });
     }
-
-    // getEmplacementById(id){
-    //     for (var i in this.list) {
-    //         if (this.list[i].id.localeCompare(id)==0) {
-    //             return this.list[i].colonne+this.list[i].emplacement+" E"+this.list[i].etagere+" S"+this.list[i].section;
-    //         }
-    //     }
-    //     return "Not found";
-    // }
-
 }
 
 export default (Utilisateurs, Parcours, Article, Alertes, AlerteUtilisateurs, Emplacements, ArticleParcours, Commande, ArticleCommande);

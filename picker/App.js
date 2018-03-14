@@ -288,6 +288,9 @@ class StartScan extends React.Component {
                 },]);
             }
             else {
+                // TODO:  Mettre l'article comme pris en base
+
+                // Suppression de l'article en cours
                 PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
                 if (PICKING_LIST.length === 0) {
                     this.props.navigation.navigate('FinishPicking');
@@ -318,6 +321,9 @@ class StartScan extends React.Component {
                     <Button
                         title="Validation manuelle"
                         onPress={() => {
+                            // TODO:  Mettre l'article comme pris en base
+
+                            // Suppression de l'article
                             PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
                             if (PICKING_LIST.length === 0) {
                                 this.props.navigation.navigate('FinishPicking');
