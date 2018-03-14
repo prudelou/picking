@@ -212,10 +212,10 @@ class Picking extends React.Component {
                     <View style={{marginTop: 22}}>
                         <View>
                             { // On affiche le contenu du modal
-                                PICKING_LIST.map((value, key) => {
+                                PICKING_LIST.map((picking, key) => {
                                     return (
                                         <Text style={styles.paragraph}
-                                              key={key}>{PICKING_LIST[0]['colonne']}{PICKING_LIST[0]['emplacement']} S{PICKING_LIST[0]['section']} E{PICKING_LIST[0]['etagere']}</Text>
+                                              key={key}>{picking['nom']} : {picking['colonne']}{picking['emplacement']} S{picking['section']} E{picking['etagere']}</Text>
                                     )
                                 })
                             }
