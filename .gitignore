@@ -1,0 +1,10 @@
+picker/ios
+picker/node_modules
+
+# misc
+picker/.DS_Store
+picker/.env.local
+picker/.env.development.local
+picker/.env.test.local
+picker/.env.production.local
+

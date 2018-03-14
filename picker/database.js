@@ -95,6 +95,54 @@ export class Alertes extends React.Component {
             console.log("Database Alerte is ready.")
         });
     }
+
+    addAlert(idArticle, type, id) {
+        // Create alert
+        let itemsRef = firebase.database().ref('Alerte');
+        let currentDate = new Date().toString();
+        let items = [{article: idArticle, date: currentDate, type: type, solved: "0"}];
+        for (let item in items) {
+            let newKey = itemsRef.push(items[item]).key;
+            itemsRef = firebase.database().ref('AlerteUtilisateur');
+            let itemsTwo = [{alerte: newKey, utilisateur: id}];
+            for (let itemTwo in itemsTwo) {
+                itemsRef.push(itemsTwo[itemTwo]);
+            }
+        }
+
+        // itemsRef = firebase.database().ref('Alerte');
+        // let that = this;
+        // itemsRef.on('value', (snapshot) => {
+        //     let items = snapshot.val();
+        //     for (let item in items) {
+        //         that.list.push({
+        //             id: item,
+        //             article: items[item].article,
+        //             date: items[item].date,
+        //             type: items[item].type,
+        //         });
+        //     }
+        // });
+        //
+        // // let alertId = this.getAlertId(idArticle, currentDate, type);
+        //
+        // itemsRef = firebase.database().ref('AlerteUtilisateur');
+        // let itemsTwo = [{alerte: alertId, utilisateur:id}];
+        // for (let itemTwo in itemsTwo){
+        //     itemsRef.push(itemsTwo[itemTwo]);
+        // }
+    }
+
+    // getAlertId(idArticle, currentDate, type) {
+    //     console.log(idArticle + " " + currentDate + " " + type + " ");
+    //     for (let i in this.list) {
+    //         console.log(this.list[i].article + " " + this.list[i].date + " " + this.list[i].type + " ");
+    //         if (this.list[i].article.localeCompare(idArticle) == 0 && this.list[i].date.localeCompare(currentDate) == 0 && this.list[i].type.localeCompare(type) == 0) {
+    //             return this.list[i].id;
+    //         }
+    //     }
+    //     return "Not found";
+    // }
 }
 
 // Classe contenant les données de la table Alertes

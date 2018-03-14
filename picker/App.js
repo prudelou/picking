@@ -22,7 +22,9 @@ import Camera from 'react-native-camera';
 import t from 'tcomb-form-native';
 import {
     Utilisateurs,
-    Parcours, Commande,
+    Parcours,
+    Commande,
+    Alertes
 } from './database';
 
 const Form = t.form.Form;
@@ -209,12 +211,14 @@ class Picking extends React.Component {
                 >
                     <View style={{marginTop: 22}}>
                         <View>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
-                            <Text style={styles.paragraph}>A122 S3 E4</Text>
+                            { // On affiche le contenu du modal
+                                PICKING_LIST.map((value, key) => {
+                                    return (
+                                        <Text style={styles.paragraph}
+                                              key={key}>{PICKING_LIST[0]['colonne']}{PICKING_LIST[0]['emplacement']} S{PICKING_LIST[0]['section']} E{PICKING_LIST[0]['etagere']}</Text>
+                                    )
+                                })
+                            }
 
                             <Button
                                 title="Fermer"
@@ -335,6 +339,10 @@ class Report extends React.Component {
             title: 'Signaler une anomalie'
         };
 
+    state = {
+        alert: new Alertes(),
+    };
+
     render() {
         return (
             <View style={styles.container}>
@@ -347,7 +355,7 @@ class Report extends React.Component {
                     <Button
                         title="Signaler un stock insuffisant"
                         onPress={() => {
-                            //TODO: ajouter l'envoi d'alerte
+                            this.state.alert.addAlert(PICKING_LIST[0]['article'], "0", ID);
 
                             PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
                             if (PICKING_LIST.length === 0) {
@@ -364,7 +372,7 @@ class Report extends React.Component {
                     <Button
                         title="Signaler une erreur d'emplacement"
                         onPress={() => {
-                            //TODO: ajouter l'envoi d'alerte
+                            this.state.alert.addAlert(PICKING_LIST[0]['article'], "1", ID);
 
                             PICKING_LIST = PICKING_LIST.slice(1, PICKING_LIST.length); // On vire l'élément qu'on vient de scanner
                             if (PICKING_LIST.length === 0) {
