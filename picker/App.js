@@ -322,7 +322,6 @@ class StartScan extends React.Component {
                                 this.props.navigation.navigate('Picking');
                             }
                         }}
-                        styles.bottomText
                     />
                 </View>
             </View>
