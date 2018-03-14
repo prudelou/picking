@@ -98,11 +98,21 @@ class Alertes {
                     article: items[item].article,
                     date: items[item].date,
                     type: items[item].type,
+                    solved: items[item].solved,
                 });
             }
             console.log("Database Alerte is ready.")
         });
     }
+
+    resolveAlert(id){
+        console.log("id = " + id);
+        const itemsRef = firebase.database().ref('Alerte');
+        var data = {solved: 1};
+        itemsRef.child(id).update(data);
+    }
+
+
 
 }
 // ==========================================================================
@@ -511,6 +521,10 @@ function generateDB(){
 }
 // ==========================================================================
 
+function resolveAlert(id){
+    alertes.resolveAlert(id);
+}
+
 function initializeData(){
     // Generate login page
     utilisateurs = new Utilisateurs();
@@ -521,38 +535,33 @@ function initializeData(){
 
     rows = [];
     for (var i in alertes.list) {
-        if (alertes.list[i].type == 1) {
+        if (alertes.list[i].type == 1 && alertes.list[i].solved==0) {
             rows.push(  <tr>
-                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                <td>{alertes.list[i].date}</td>
-                <td><a class="btn-floating green"><i class="material-icons">clear</i></a></td>
-            </tr>)
+                            <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                            <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                            <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                            <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                            <td>{alertes.list[i].date}</td>
+                            <td><a class="btn-floating green" onClick={resolveAlert.bind(this,alertes.list[i].id)}><i class="material-icons">clear</i></a></td>
+                        </tr>)
         }
     }
 
     stockfaible = [];
     for (var i in alertes.list) {
-        if (alertes.list[i].type == 0) {
+        if (alertes.list[i].type == 0 && alertes.list[i].solved==0) {
             stockfaible.push(  <tr>
-                <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
-                <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
-                <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
-                <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
-                <td>{alertes.list[i].date}</td>
-                <td><a class="btn-floating green"><i class="material-icons">clear</i></a></td>
-            </tr>)
+                                    <td>{articles.getArticleNameById(alertes.list[i].article)}</td>
+                                    <td>{emplacements.getEmplacementById(articles.getEmplcamentIdByArticleId(alertes.list[i].article))}</td>
+                                    <td>{articles.getArticleStockById(alertes.list[i].article)}</td>
+                                    <td>{utilisateurs.getUserNameById(alerteUtilisateurs.getUserIdByAlertId(alertes.list[i].id))}</td>
+                                    <td>{alertes.list[i].date}</td>
+                                    <td><a class="btn-floating green" onClick={resolveAlert.bind(this,alertes.list[i].id)}><i class="material-icons">clear</i></a></td>
+                                </tr>)
         }
     }
 }
-
-function resolveRow(id){
-
-}
 // =========================== Run at start =================================
-
 // Generate login page
 var utilisateurs = new Utilisateurs();
 var alertes = new Alertes();
