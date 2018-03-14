@@ -278,7 +278,7 @@ export class Commande extends React.Component {
                             stock: itemsArticle['stock'],
                             poids: itemsArticle['poids'],
                             nom: itemsArticle['nom'],
-                            emplacement: itemsArticle['emplacement'], // ID of Emplacement
+                            // emplacement: itemsArticle['emplacement'], // ID of Emplacement
 
                             // Table Emplacement
                             colonne: emplacement['colonne'],
@@ -339,21 +339,31 @@ export class Parcours extends React.Component {
         console.log(commandList);
         for (let i = 0; i < commandList.length; i++) {
             console.log(commandList[i]);
-            if (poidsCommande + (commandList[i]['poids'] * commandList[i]['quantité']) <= poidsMax && commandList[i]['isintoparcours'] !== 1) {
+            if (poidsCommande + (commandList[i]['poids'] * commandList[i]['quantité']) <= poidsMax && commandList[i]['isintoparcours'] !== 0) {
                 parcours.push(commandList[i]);
                 poidsCommande += (commandList[i]['poids'] * commandList[i]['quantité']);
 
                 // Set is into parcours in base
                 const itemsRef = firebase.database().ref('ArticleCommande');
-                let data = {isintoparcours: 1};
+                let data = {isintoparcours: 0};
                 itemsRef.child(commandList[i]['id']).update(data);
             }
         }
 
         // Suppression des doublons
-        // for(let i = 0; i < parcours.length; i++) {
-        //
-        // }
+        for (let i = 0; i < parcours.length; i++) {
+            if (i + 1 !== parcours.length) {
+                // Si l'élément courant est le même que le suivant
+                if (parcours[i]['nom'].localeCompare(parcours[i + 1]['nom']) === 0 &&
+                    parcours[i]['colonne'].localeCompare(parcours[i + 1]['colonne']) === 0 &&
+                    parcours[i]['emplacement'] === parcours[i + 1]['emplacement'] &&
+                    parcours[i]['section'] === parcours[i + 1]['section'] &&
+                    parcours[i]['etagere'] === parcours[i + 1]['etagere']) {
+                    parcours[i + 1]['quantité'] += parcours[i]['quantité'];
+                    parcours = parcours.slice(i, i + 1);
+                }
+            }
+        }
 
         // Order by Emplacements
         parcours.sort((val1, val2) => {
