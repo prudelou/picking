@@ -123,7 +123,7 @@ class StartPicking extends React.Component {
 
         if (PICKING_LIST.length === 0) {
             // If Tables are not loaded or nothing to be picked
-            Alert.alert("Aucune commande disponible");
+            Alert.alert("Aucune commande disponible, veuillez patienter");
         }
         else {
             this.props.navigation.navigate('Picking');

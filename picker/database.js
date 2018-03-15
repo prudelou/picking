@@ -340,7 +340,22 @@ export class Parcours extends React.Component {
         for (let i = 0; i < commandList.length; i++) {
             console.log(commandList[i]);
             if (poidsCommande + (commandList[i]['poids'] * commandList[i]['quantité']) <= poidsMax && commandList[i]['isintoparcours'] !== 1) {
-                parcours.push(commandList[i]);
+
+                if (parcours.length === 0) {
+                    parcours.push(commandList[i]);
+                }
+                // Si l'élément actuel est le même que le précédent, additionner les quantités
+                else if (parcours[parcours.length - 1]['nom'].localeCompare(commandList[i]['nom']) === 0 &&
+                    parcours[parcours.length - 1]['colonne'].localeCompare(commandList[i]['colonne']) === 0 &&
+                    parcours[parcours.length - 1]['emplacement'] === commandList[i]['emplacement'] &&
+                    parcours[parcours.length - 1]['section'] === commandList[i]['section'] &&
+                    parcours[parcours.length - 1]['etagere'] === commandList[i]['etagere']) {
+                    parcours[parcours.length - 1]['quantité'] = parcours[parcours.length - 1]['quantité'] + commandList[i]['quantité'];
+                }
+                else {
+                    parcours.push(commandList[i]);
+                }
+
                 poidsCommande += (commandList[i]['poids'] * commandList[i]['quantité']);
 
                 // Set is into parcours in base
@@ -351,24 +366,22 @@ export class Parcours extends React.Component {
         }
 
         // Suppression des doublons
-        for (let i = 0; i < parcours.length; i++) {
-            if (i + 1 !== parcours.length) {
-                // Si l'élément courant est le même que le suivant
-                if (parcours[i]['nom'].localeCompare(parcours[i + 1]['nom']) === 0 &&
-                    parcours[i]['colonne'].localeCompare(parcours[i + 1]['colonne']) === 0 &&
-                    parcours[i]['emplacement'] === parcours[i + 1]['emplacement'] &&
-                    parcours[i]['section'] === parcours[i + 1]['section'] &&
-                    parcours[i]['etagere'] === parcours[i + 1]['etagere']) {
-                    parcours[i + 1]['quantité'] += parcours[i]['quantité'];
-                    parcours = parcours.slice(i, i + 1);
-                }
-            }
-        }
-
-        // Order by Emplacements
-        parcours.sort((val1, val2) => {
-            return val1.colonne.localeCompare(val2.colonne);
-        });
+        // let parcours_new = [];
+        // for (let i = 0; i < parcours.length; i++) {
+        //     if (i + 1 !== parcours.length) {
+        //         // Si l'élément courant est le même que le suivant
+        //         if (parcours[i]['nom'].localeCompare(parcours[i + 1]['nom']) === 0 &&
+        //             parcours[i]['colonne'].localeCompare(parcours[i + 1]['colonne']) === 0 &&
+        //             parcours[i]['emplacement'] === parcours[i + 1]['emplacement'] &&
+        //             parcours[i]['section'] === parcours[i + 1]['section'] &&
+        //             parcours[i]['etagere'] === parcours[i + 1]['etagere']) {
+        //                 parcours[i]['quantité'] = parcours[i]['quantité'] + parcours[i + 1]['quantité'];
+        //                 parcours = parcours.slice(i, i + 1);
+        //                 // parcours_new.push(parcours[i]);
+        //         }
+        //     }
+        // }
+        // parcours = parcours_new;
 
         // TODO: Insert into parcours and ArticleParcours
         // let itemsRef = firebase.database().ref('Parcours');
